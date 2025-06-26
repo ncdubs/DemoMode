@@ -42,35 +42,39 @@ def get_competitor_product_info(sku):
         - Key features: Stainless steel tub, Quiet operation  
         - Full list price: $699  
         - SKU: WDT730HAMZ  
-        - Link: https://example.com/competitor-product
+        - Link: https://example.com/competitor-product  
+        - Image: https://example.com/images/competitor.jpg
         """
     # GPT logic here...
 
 
 def get_ge_match(product_summary):
     if DEMO_MODE:
-        return f"GE Model: GDT630PYRFS  \nWhy it matches: Same size, stainless tub, quiet features  \nSKU: GDT630PYRFS  \nLink: https://www.geappliances.com/appliance/GDT630PYRFS"
+        return f"GE Model: GDT630PYRFS  \nWhy it's the best match: Closest feature alignment and GE family match (GE, GE Profile, Cafe, Monogram, Haier, Hotpoint)  \nSKU: GDT630PYRFS  \nLink: https://www.geappliances.com/appliance/GDT630PYRFS  \nImage: https://example.com/images/ge.jpg"
     # GPT logic here...
 
 
-def generate_comparison_table(competitor_info, ge_match, feature):
+def generate_comparison_table(competitor_info, ge_match, features):
     if DEMO_MODE:
+        feature_rows = "\n".join([
+            f"| {feature}         | ✅ Yes                | ✅ Yes              |" for feature in features
+        ])
         return f"""
-        | Feature           | Competitor Product     | GE Product           |
-        |-------------------|------------------------|----------------------|
-        | Brand             | Whirlpool              | GE                   |
-        | SKU               | WDT730HAMZ             | GDT630PYRFS          |
-        | Price             | $699                   | $699                 |
-        | Size              | 24\" x 34\"            | 24\" x 34\"          |
-        | Configuration     | Front control          | Front control        |
-        | {feature}         | Yes                    | Yes                  |
-        | Product Link      | [Link](https://example.com/competitor-product) | [Link](https://www.geappliances.com/appliance/GDT630PYRFS) |
-        | What Doesn't Match | None (very close match) | None (very close match) |
+        | Feature             | Competitor Product     | GE Product           |
+        |---------------------|------------------------|----------------------|
+        | Brand               | Whirlpool              | GE                   |
+        | SKU                 | WDT730HAMZ             | GDT630PYRFS          |
+        | Price               | $699                   | $699                 |
+        | Size                | 24\" x 34\"            | 24\" x 34\"          |
+        | Configuration       | Front control          | Front control        |
+        {feature_rows}
+        | Product Link        | [Link](https://example.com/competitor-product) | [Link](https://www.geappliances.com/appliance/GDT630PYRFS) |
+        | What Doesn't Match  | None (very close match) | None (very close match) |
         """
     # GPT logic here...
 
 # --- MAIN LOGIC ---
-specific_feature = None
+specific_features = []
 
 if submit and sku:
     st.session_state.sku = sku
@@ -87,15 +91,22 @@ if st.session_state.submitted:
         st.subheader("Recommended Equivalent")
         st.markdown(ge_match)
 
+    # --- Extract demo image links ---
+    if DEMO_MODE:
+        st.image([
+            "https://example.com/images/competitor.jpg",
+            "https://example.com/images/ge.jpg"
+        ], width=300, caption=["Competitor Product", "GE Product"])
+
     feature_options = [
         "ADA compliance", "Stainless steel tub", "WiFi connectivity",
         "Energy Star rated", "Top control panel", "Child lock",
         "Third rack", "SmartDry", "Quiet operation", "Steam clean"
     ]
-    specific_feature = st.selectbox("Select a specific feature to compare:", feature_options)
+    specific_features = st.multiselect("Select features to compare:", feature_options)
 
-    if specific_feature:
+    if specific_features:
         with st.spinner("Generating comparison table..."):
-            feature_check = generate_comparison_table(competitor_info, ge_match, specific_feature)
+            feature_check = generate_comparison_table(competitor_info, ge_match, specific_features)
             st.subheader("Feature Comparison Table")
-            st.markdown(feature_check)
+            st.markdown(feature_check, unsafe_allow_html=True)
