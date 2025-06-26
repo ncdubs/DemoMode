@@ -55,23 +55,20 @@ def get_ge_match(product_summary):
 
 
 def generate_comparison_table(competitor_info, ge_match, features):
-    if DEMO_MODE:
-        feature_rows = "\n".join([
-            f"| {feature}         | ✅ Yes                | ✅ Yes              |" for feature in features
-        ])
-        return f"""
-        | Feature             | Competitor Product     | GE Product           |
-        |---------------------|------------------------|----------------------|
-        | Brand               | Whirlpool              | GE                   |
-        | SKU                 | WDT730HAMZ             | GDT630PYRFS          |
-        | Price               | $699                   | $699                 |
-        | Size                | 24\" x 34\"            | 24\" x 34\"          |
-        | Configuration       | Front control          | Front control        |
-        {feature_rows}
-        | Product Link        | [Link](https://example.com/competitor-product) | [Link](https://www.geappliances.com/appliance/GDT630PYRFS) |
-        | What Doesn't Match  | None (very close match) | None (very close match) |
-        """
-    # GPT logic here...
+    base_rows = [
+        "| Feature           | Competitor Product     | GE Product           |",
+        "|-------------------|------------------------|----------------------|",
+        "| Brand             | Whirlpool              | GE                   |",
+        "| SKU               | WDT730HAMZ             | GDT630PYRFS          |",
+        "| Price             | $699                   | $699                 |",
+        "| Size              | 24\" x 34\"            | 24\" x 34\"          |",
+        "| Configuration     | Front control          | Front control        |"
+    ]
+    feature_rows = [
+        f"| {feature}         | ✅ Yes                | ✅ Yes              |" for feature in features
+    ] if features else []
+    links_row = "| Product Link      | [Link](https://example.com/competitor-product) | [Link](https://www.geappliances.com/appliance/GDT630PYRFS) |"
+    return "\n".join(base_rows + feature_rows + [links_row])
 
 # --- MAIN LOGIC ---
 specific_features = []
@@ -91,7 +88,6 @@ if st.session_state.submitted:
         st.subheader("Recommended Equivalent")
         st.markdown(ge_match)
 
-    # --- Extract demo image links ---
     if DEMO_MODE:
         st.image([
             "https://example.com/images/competitor.jpg",
@@ -105,8 +101,12 @@ if st.session_state.submitted:
     ]
     specific_features = st.multiselect("Select features to compare:", feature_options)
 
-    if specific_features:
-        with st.spinner("Generating comparison table..."):
-            feature_check = generate_comparison_table(competitor_info, ge_match, specific_features)
-            st.subheader("Feature Comparison Table")
-            st.markdown(feature_check, unsafe_allow_html=True)
+    st.subheader("Feature Comparison Table")
+    feature_check = generate_comparison_table(competitor_info, ge_match, specific_features)
+    st.markdown(feature_check, unsafe_allow_html=True)
+
+    # Add toggle for "What Doesn't Match"
+    show_diff = st.radio("Show what doesn't match?", ["No", "Yes"], horizontal=True)
+    if show_diff == "Yes":
+        st.subheader("What Doesn't Match")
+        st.markdown("None (very close match)")
